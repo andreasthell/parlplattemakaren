@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pärlplattemakaren</title>
+<meta name="description" content="Gör pärlplattemönster av bilder, med plocklista och utskrift i verklig storlek.">
+<meta name="theme-color" content="#F2F5FA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#10131B" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Pärlplatta">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preload" href="fonts/atkinson-hyperlegible-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/fredoka-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+<script type="module" src="js/ui.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><span class="dots" aria-hidden="true"><i style="background:#C2252F"></i><i style="background:#F2C200"></i><i style="background:#2E6BC6"></i><i style="background:#1E8A4C"></i><i style="background:#EA8FB0"></i><i style="background:#EB6A21"></i></span>Pärlplattemakaren</h1>
+    <p>Ladda upp en bild, välj platta och få ett mönster med plocklista och utskrift i verklig storlek. Allt räknas ut i din webbläsare, bilden skickas ingenstans.</p>
+  </header>
+
+  <div class="grid">
+    <aside class="panel" aria-label="Inställningar">
+      <section class="sec">
+        <h2><span class="n">1</span>Bild</h2>
+        <label class="drop" id="drop" for="file">
+          <canvas id="thumb" width="168" height="168"></canvas>
+          <div><strong>Välj eller släpp en bild</strong><small id="imgName">Exempel: Solen</small><br><small>Du kan också kopiera en bild från en webbsida och klistra in med Ctrl+V</small></div>
+        </label>
+        <input type="file" id="file" accept="image/*" hidden>
+        <div class="row"><span>Placering</span>
+          <div class="seg" role="group" aria-label="Placering">
+            <button id="fitCover" aria-pressed="true">Fyll plattan</button><button id="fitContain" aria-pressed="false">Hela bilden</button>
+          </div></div>
+        <label class="field"><span>Zoom</span><div class="row"><input type="range" id="zoom" min="50" max="400" value="100"><span class="val" id="zoomV">100 %</span></div></label>
+        <div class="two">
+          <label class="field" style="flex:1;min-width:120px"><span>Flytta i sidled</span><input type="range" id="panX" min="-100" max="100" value="0"></label>
+          <label class="field" style="flex:1;min-width:120px"><span>Flytta i höjdled</span><input type="range" id="panY" min="-100" max="100" value="0"></label>
+        </div>
+        <button class="btn" id="sample" style="align-self:flex-start">Använd exempelbilden</button>
+      </section>
+
+      <section class="sec">
+        <h2><span class="n">2</span>Platta</h2>
+        <div class="shapes" role="group" aria-label="Plattans form">
+          <button data-shape="rect" aria-pressed="false"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>Fyrkant</button>
+          <button data-shape="round" aria-pressed="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>Rund</button>
+          <button data-shape="hex" aria-pressed="false"><svg viewBox="0 0 24 24"><polygon points="22,12 17,20.7 7,20.7 2,12 7,3.3 17,3.3"/></svg>Sexkant</button>
+          <button data-shape="star6" aria-pressed="false"><svg viewBox="0 0 24 24"><polygon points="12,1 15.2,6.5 21.5,6.5 18.4,12 21.5,17.5 15.2,17.5 12,23 8.8,17.5 2.5,17.5 5.6,12 2.5,6.5 8.8,6.5"/></svg>Stjärna 6</button>
+          <button data-shape="star5" aria-pressed="false"><svg viewBox="0 0 24 24"><polygon points="12,1.5 14.9,8.6 22.5,9.1 16.6,13.9 18.5,21.4 12,17.3 5.5,21.4 7.4,13.9 1.5,9.1 9.1,8.6"/></svg>Stjärna 5</button>
+          <button data-shape="heart" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M12 21.5 3.2 12.9C.6 10.3.9 6 4 4.2c2.6-1.5 5.7-.6 8 2.3 2.3-2.9 5.4-3.8 8-2.3 3.1 1.8 3.4 6.1.8 8.7z"/></svg>Hjärta</button>
+        </div>
+        <div id="rectOpts" class="two" hidden>
+          <label class="field"><span>Bredd</span><input type="number" id="rw" min="5" max="120" value="29"></label>
+          <label class="field"><span>Höjd</span><input type="number" id="rh" min="5" max="120" value="29"></label>
+          <label class="field"><span>Plattgräns var</span><input type="number" id="plate" min="0" max="120" value="29"></label>
+        </div>
+        <div id="shapeOpts" class="field">
+          <span>Storlek, pärlor tvärs över</span>
+          <div class="row"><input type="range" id="size" min="9" max="61" value="29"><span class="val" id="sizeV">29</span></div>
+        </div>
+        <div class="row" id="gridRow"><span>Pinnarnas mönster</span>
+          <div class="seg" role="group" aria-label="Pinnarnas mönster">
+            <button id="gSquare" aria-pressed="false">Raka</button><button id="gOffset" aria-pressed="true">Förskjutna</button>
+          </div></div>
+        <div class="row"><span>Pärlstorlek</span>
+          <select id="bead"><option value="2.5">Mini, 2,5 mm</option><option value="5" selected>Midi, 5 mm</option><option value="10">Maxi, 10 mm</option></select></div>
+        <p class="note" id="gridNote">Runda plattor, sexkanter och stjärnor har oftast förskjutna rader. Jämför med din platta.</p>
+      </section>
+
+      <section class="sec">
+        <h2><span class="n">3</span>Färger</h2>
+        <label class="field"><span>Högst antal färger</span><div class="row"><input type="range" id="maxc" min="2" max="36" value="12"><span class="val" id="maxcV">12</span></div></label>
+        <div class="row"><span style="color:var(--muted);font-size:13px">Färger du har hemma</span><span class="two"><button class="btn" id="palAll">Alla</button><button class="btn" id="palNone">Inga</button></span></div>
+        <div class="pal" id="pal"></div>
+        <p class="note">Färgerna är ungefärliga och skiljer sig något från verkliga pärlor.</p>
+      </section>
+
+      <section class="sec">
+        <h2><span class="n">4</span>Justera</h2>
+        <label class="field"><span>Ljusstyrka</span><div class="row"><input type="range" id="bright" min="-60" max="60" value="0"><span class="val" id="brightV">0</span></div></label>
+        <label class="field"><span>Kontrast</span><div class="row"><input type="range" id="contrast" min="-60" max="80" value="0"><span class="val" id="contrastV">0</span></div></label>
+        <label class="field"><span>Färgmättnad</span><div class="row"><input type="range" id="sat" min="-100" max="100" value="0"><span class="val" id="satV">0</span></div></label>
+        <label class="check"><input type="checkbox" id="despeckle" checked><span>Ta bort ensamma pärlor<small>Byter ut enstaka pärlor som saknar grannar i samma färg</small></span></label>
+        <label class="check"><input type="checkbox" id="dither"><span>Blanda färger (dithering)<small>Ger mjukare övergångar i foton, men ett rörigare mönster</small></span></label>
+        <label class="check"><input type="checkbox" id="bg"><span>Ta bort bakgrund<small>Hoppar över färgen som finns i bildens hörn</small></span></label>
+        <label class="field" id="bgTolRow" hidden><span>Bakgrundstolerans</span><div class="row"><input type="range" id="bgTol" min="2" max="45" value="14"><span class="val" id="bgTolV">14</span></div></label>
+      </section>
+    </aside>
+
+    <main class="stage">
+      <div class="bar">
+        <div class="stats" id="stats"></div>
+        <div class="two">
+          <div class="seg" role="group" aria-label="Visning">
+            <button id="vBeads" aria-pressed="true">Pärlor</button><button id="vSym" aria-pressed="false">Symboler</button>
+          </div>
+          <button class="btn primary" id="startBead">Börja pärla</button>
+        </div>
+      </div>
+      <div class="beadbar">
+        <button class="btn" id="exitBead">← Inställningar</button>
+        <span class="two"><button class="btn" id="zOut" aria-label="Zooma ut">−</button><button class="btn" id="zIn" aria-label="Zooma in">+</button></span>
+        <button class="btn" id="resetDone">Börja om</button>
+        <span class="note" id="beadHint">Tryck på en färg i listan och sedan på varje pärla när den sitter på plattan.</span>
+      </div>
+      <div class="board" id="boardBox"><canvas id="cv" aria-label="Pärlmönster"></canvas></div>
+      <div class="legend">
+        <h3>Plocklista <small id="legendHint">Tryck på en färg eller en pärla för att markera var den ska sitta</small></h3>
+        <div class="items" id="items"></div>
+      </div>
+      <div class="out">
+        <div class="row" style="justify-content:flex-start;flex-wrap:wrap"><span class="two"><button class="btn primary" id="print">Skriv ut</button><button class="btn" id="download">Ladda ner PNG</button></span><span class="note" id="printInfo"></span></div>
+        <div id="printBox" hidden>
+          <ol>
+            <li>Skriv ut i 100 % eller verklig storlek, inte "anpassa till sidan".</li>
+            <li>Mät 5 cm-linjalen på utskriften. Stämmer den kan du lägga papperet under en genomskinlig platta.</li>
+          </ol>
+          <p class="warn" id="printWarn" hidden></p>
+          <div class="imgbox"><img id="printImg" alt="Utskriftsbild av pärlmönstret med plocklista"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<div id="printSheet" aria-hidden="true"><img id="printSheetImg" alt=""></div>
+</body>
+</html>
