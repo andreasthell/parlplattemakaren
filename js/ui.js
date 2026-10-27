@@ -98,3 +98,5 @@ new MutationObserver(render).observe(document.documentElement,{attributes:true,a
 document.fonts&&document.fonts.ready.then(render);
 
 buildPal();syncShapeUI();setImage(sampleImage(),'Exempel: Solen');
+
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
