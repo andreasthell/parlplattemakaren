@@ -13,6 +13,7 @@ const ASSETS=[
   'js/palette.js',
   'js/print.js',
   'js/render.js',
+  'js/samples.js',
   'js/shapes.js',
   'js/state.js',
   'js/ui.js',

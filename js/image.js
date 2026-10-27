@@ -6,21 +6,6 @@ import{S,app,loadDone}from'./state.js';
 
 const PI=Math.PI;
 
-/* ---------- exempelbild ---------- */
-export function sampleImage(){
-  const c=document.createElement('canvas');c.width=c.height=480;const x=c.getContext('2d');
-  const g=x.createLinearGradient(0,0,0,480);g.addColorStop(0,'#6EC3F0');g.addColorStop(1,'#BFE6FA');x.fillStyle=g;x.fillRect(0,0,480,480);
-  x.fillStyle='#FFFFFF';[[70,90,34],[110,80,42],[150,96,30],[360,400,36],[400,388,46],[440,404,32]].forEach(([a,b,r])=>{x.beginPath();x.arc(a,b,r,0,7);x.fill()});
-  x.fillStyle='#F07A18';x.save();x.translate(240,250);
-  for(let i=0;i<12;i++){x.rotate(PI/6);x.beginPath();x.moveTo(-26,-140);x.lineTo(0,-205);x.lineTo(26,-140);x.fill()}x.restore();
-  x.fillStyle='#FFD21F';x.beginPath();x.arc(240,250,130,0,7);x.fill();
-  x.fillStyle='#F49AA6';x.beginPath();x.arc(178,282,22,0,7);x.arc(302,282,22,0,7);x.fill();
-  x.fillStyle='#1E1E22';x.beginPath();x.ellipse(195,225,15,22,0,0,7);x.ellipse(285,225,15,22,0,0,7);x.fill();
-  x.fillStyle='#FFFFFF';x.beginPath();x.arc(200,216,5,0,7);x.arc(290,216,5,0,7);x.fill();
-  x.strokeStyle='#1E1E22';x.lineWidth=14;x.lineCap='round';x.beginPath();x.arc(240,270,52,0.2*PI,0.8*PI);x.stroke();
-  return c;
-}
-
 /* ---------- bildhantering ---------- */
 let scaledCache={src:null,w:0,c:null};
 export function resetScaledCache(){scaledCache={src:null}}

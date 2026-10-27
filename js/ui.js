@@ -1,7 +1,8 @@
 /* ---------- UI ---------- */
 import{lum}from'./color.js';
 import{PAL}from'./palette.js';
-import{sampleImage,resetScaledCache,computeBg,compute}from'./image.js';
+import{resetScaledCache,computeBg,compute}from'./image.js';
+import{SAMPLES,sampleImage}from'./samples.js';
 import{cv,geo,render,drawThumb}from'./render.js';
 import{invalidatePrint,printPattern,downloadPattern}from'./print.js';
 import{S,app,savePal,saveDone}from'./state.js';
@@ -57,7 +58,8 @@ $('bg').onchange=e=>{S.bg=e.target.checked;$('bgTolRow').hidden=!S.bg;update()};
 $('print').onclick=printPattern;
 $('download').onclick=downloadPattern;
 
-function setImage(img,name){S.img=img;$('imgName').textContent=name;resetScaledCache();computeBg();
+function setImage(img,name,sample=null){S.img=img;$('imgName').textContent=name;resetScaledCache();computeBg();
+  document.querySelectorAll('[data-sample]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.sample===sample));
   S.zoom=1;S.panX=S.panY=0;$('zoom').value=100;$('zoomV').textContent='100 %';$('panX').value=0;$('panY').value=0;update()}
 function loadFile(f){if(!f||!f.type.startsWith('image/'))return;const url=URL.createObjectURL(f),im=new Image();
   im.onload=()=>setImage(im,f.name||'Inklistrad bild');im.onerror=()=>{$('imgName').textContent='Bilden gick inte att läsa. Prova en PNG eller JPG.'};im.src=url}
@@ -68,7 +70,11 @@ const drop=$('drop');
 const urlHint=()=>{$('imgName').textContent='Länkar kan inte hämtas här. Högerklicka på bilden på webbsidan, välj Kopiera bild och klistra in med Ctrl+V.'};
 drop.addEventListener('drop',e=>{const f=e.dataTransfer.files[0];if(f)return loadFile(f);if(/^https?:/i.test(e.dataTransfer.getData('text/uri-list')||e.dataTransfer.getData('text/plain')||''))urlHint()});
 document.addEventListener('paste',e=>{const items=[...(e.clipboardData?.items||[])],it=items.find(i=>i.type.startsWith('image/'));if(it)return loadFile(it.getAsFile());const t=e.clipboardData?.getData('text/plain')||'';if(/^https?:\/\/\S+$/i.test(t.trim())&&!/^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName))urlHint()});
-$('sample').onclick=()=>setImage(sampleImage(),'Exempel: Solen');
+function buildSamples(){const box=$('samples');
+  for(const sm of SAMPLES){const b=document.createElement('button'),t=document.createElement('canvas'),im=document.createElement('img');
+    t.width=t.height=96;t.getContext('2d').drawImage(sampleImage(sm.id),0,0,96,96);im.src=t.toDataURL();im.alt='';
+    b.dataset.sample=sm.id;b.title=sm.name;b.setAttribute('aria-label','Exempel: '+sm.name);b.appendChild(im);
+    b.onclick=()=>setImage(sampleImage(sm.id),'Exempel: '+sm.name,sm.id);box.appendChild(b)}}
 
 cv.addEventListener('click',e=>{const R=app.R;if(!R||!geo)return;const r=cv.getBoundingClientRect(),k=geo.w/r.width,mx=(e.clientX-r.left)*k,my=(e.clientY-r.top)*k,L=R.L;
   let bi=-1,bd=1e9;L.cells.forEach((c,i)=>{const dx=geo.pad+(c.x-L.minX+0.5)*geo.cell-mx,dy=geo.pad+(c.y-L.minY+0.5)*geo.cell-my,d=dx*dx+dy*dy;if(d<bd){bd=d;bi=i}});
@@ -97,6 +103,6 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',render);
 new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 document.fonts&&document.fonts.ready.then(render);
 
-buildPal();syncShapeUI();setImage(sampleImage(),'Exempel: Solen');
+buildPal();buildSamples();syncShapeUI();setImage(sampleImage('sun'),'Exempel: Solen','sun');
 
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
