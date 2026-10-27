@@ -107,10 +107,9 @@
         <div class="items" id="items"></div>
       </div>
       <div class="out">
-        <div class="row" style="justify-content:flex-start;flex-wrap:wrap"><button class="btn primary" id="mkPrint">Skapa utskriftsbild</button><span class="note" id="printInfo"></span></div>
+        <div class="row" style="justify-content:flex-start;flex-wrap:wrap"><span class="two"><button class="btn primary" id="print">Skriv ut</button><button class="btn" id="download">Ladda ner PNG</button></span><span class="note" id="printInfo"></span></div>
         <div id="printBox" hidden>
           <ol>
-            <li>Högerklicka på bilden och välj Spara bild som. På mobilen håller du fingret på bilden.</li>
             <li>Skriv ut i 100 % eller verklig storlek, inte "anpassa till sidan".</li>
             <li>Mät 5 cm-linjalen på utskriften. Stämmer den kan du lägga papperet under en genomskinlig platta.</li>
           </ol>
@@ -121,5 +120,6 @@
     </main>
   </div>
 </div>
+<div id="printSheet" aria-hidden="true"><img id="printSheetImg" alt=""></div>
 </body>
 </html>

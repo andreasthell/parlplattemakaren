@@ -15,8 +15,14 @@ function addPhys(buf,dpi){
   dv.setUint32(17,crc32(chunk.subarray(4,17)));
   const out=new Uint8Array(src.length+21);out.set(src.subarray(0,33));out.set(chunk,33);out.set(src.subarray(33),54);return out;
 }
-let lastUrl=null;
-export function makePrint(){
+// utskriftsbilden byggs en gång och återanvänds tills mönstret ändras
+let lastUrl=null,pending=null;
+export function invalidatePrint(){pending=null}
+function buildPrint(){
+  if(!pending)pending=new Promise(resolve=>drawPrint(resolve));
+  return pending;
+}
+function drawPrint(resolve){
   const R=app.R,L=R.L,mm=parseFloat(S.bead);let dpi=300;
   const layoutFor=dpi=>{const P=mm/25.4*dpi,m=dpi/2.54,colW=dpi*2.1,W=Math.max(Math.round(dpi*8.27),Math.round(L.bw*P+2*m)),cols=Math.max(1,Math.floor((W-2*m)/colW)),rows=Math.ceil(R.used.length/cols),
     titleH=dpi*0.62,scaleH=dpi*0.5,legendH=dpi*0.35+rows*dpi*0.25,H=Math.round(m+titleH+L.bh*P+dpi*0.2+scaleH+legendH+m);return{P,m,colW,W,H,cols,titleH,scaleH}};
@@ -50,8 +56,31 @@ export function makePrint(){
     x.textAlign='center';x.fillStyle=lum(col.rgb)>140?'#1A1F2E':'#FFFFFF';x.font=`700 ${Math.round(28*u)}px ${body}`;x.fillText(it.sym,cx+r,cy+2*u);
     x.textAlign='left';x.fillStyle='#1A1F2E';x.font=`${Math.round(32*u)}px ${body}`;x.fillText(col.name,cx+2*r+18*u,cy);
     x.textAlign='right';x.font=`700 ${Math.round(32*u)}px ${body}`;x.fillText(fmt(it.count),cx+colW-50*u,cy);x.textAlign='left'});
+  const name=`parlmonster-${S.shape}-${L.rect?S.rw+'x'+S.rh:S.size}.png`;
   c.toBlob(async b=>{const buf=await b.arrayBuffer(),blob=new Blob([addPhys(buf,dpi)],{type:'image/png'});
-    if(lastUrl)URL.revokeObjectURL(lastUrl);lastUrl=URL.createObjectURL(blob);$('printImg').src=lastUrl;$('printBox').hidden=false;
-    const warn=$('printWarn');const wmm=L.bw*mm;warn.hidden=wmm<=190;warn.textContent=`Mönstret är ${cm(L.bw)} cm brett. Skriv ut på A3 eller dela upp det på flera plattor.`;
-    $('printBox').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})},'image/png');
+    if(lastUrl)URL.revokeObjectURL(lastUrl);lastUrl=URL.createObjectURL(blob);
+    resolve({blob,url:lastUrl,name,widthIn:W/dpi,wide:L.bw*mm>190,widthCm:cm(L.bw)})},'image/png');
+}
+function showPreview(p){
+  $('printImg').src=p.url;$('printBox').hidden=false;
+  const warn=$('printWarn');warn.hidden=!p.wide;warn.textContent=`Mönstret är ${p.widthCm} cm brett. Skriv ut på A3 eller dela upp det på flera plattor.`;
+  $('printBox').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+}
+
+export async function printPattern(){
+  const p=await buildPrint();showPreview(p);
+  // utskriftsarket visar bara bilden, i sin fysiska bredd, så att 100 % blir verklig storlek
+  const img=$('printSheetImg');img.style.width=p.widthIn+'in';
+  if(img.getAttribute('src')!==p.url){img.src=p.url;try{await img.decode()}catch(e){}}
+  window.print();
+}
+
+export async function downloadPattern(){
+  const p=await buildPrint();showPreview(p);
+  const file=new File([p.blob],p.name,{type:'image/png'});
+  // på pekskärmar (iPad) ger delningsbladet Spara bild och Spara i Filer, en nedladdningslänk fungerar sämre där
+  if(matchMedia('(pointer:coarse)').matches&&navigator.canShare?.({files:[file]})){
+    try{await navigator.share({files:[file]});return}catch(e){if(e.name==='AbortError')return}
+  }
+  const a=document.createElement('a');a.href=p.url;a.download=p.name;document.body.appendChild(a);a.click();a.remove();
 }

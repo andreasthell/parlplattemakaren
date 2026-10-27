@@ -3,7 +3,7 @@ import{lum}from'./color.js';
 import{PAL}from'./palette.js';
 import{sampleImage,resetScaledCache,computeBg,compute}from'./image.js';
 import{cv,geo,render,drawThumb}from'./render.js';
-import{makePrint}from'./print.js';
+import{invalidatePrint,printPattern,downloadPattern}from'./print.js';
 import{S,app,savePal,saveDone}from'./state.js';
 import{$,fmt,cm}from'./util.js';
 
@@ -25,7 +25,7 @@ function updateInfo(){
 }
 
 let pending=false;
-function update(){if(pending)return;pending=true;requestAnimationFrame(()=>{pending=false;compute();render();drawThumb();updateInfo();$('printBox').hidden=true})}
+function update(){if(pending)return;pending=true;requestAnimationFrame(()=>{pending=false;compute();render();drawThumb();updateInfo();invalidatePrint();$('printBox').hidden=true})}
 
 function buildPal(){const pal=$('pal');pal.innerHTML='';PAL.forEach((p,i)=>{const b=document.createElement('button');b.style.background=p.hex;b.title=p.name;b.setAttribute('aria-label',p.name);b.setAttribute('aria-pressed',S.enabled.has(i));
   b.onclick=()=>{S.enabled.has(i)?S.enabled.delete(i):S.enabled.add(i);b.setAttribute('aria-pressed',S.enabled.has(i));savePal();update()};pal.appendChild(b)})}
@@ -54,7 +54,8 @@ $('bead').onchange=e=>{S.bead=e.target.value;update()};
 $('despeckle').onchange=e=>{S.despeckle=e.target.checked;update()};
 $('dither').onchange=e=>{S.dither=e.target.checked;update()};
 $('bg').onchange=e=>{S.bg=e.target.checked;$('bgTolRow').hidden=!S.bg;update()};
-$('mkPrint').onclick=makePrint;
+$('print').onclick=printPattern;
+$('download').onclick=downloadPattern;
 
 function setImage(img,name){S.img=img;$('imgName').textContent=name;resetScaledCache();computeBg();
   S.zoom=1;S.panX=S.panY=0;$('zoom').value=100;$('zoomV').textContent='100 %';$('panX').value=0;$('panY').value=0;update()}

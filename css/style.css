@@ -105,3 +105,11 @@ body.beading #cv{max-width:none;cursor:pointer}
   .pal{grid-template-columns:repeat(auto-fill,minmax(38px,1fr))}
 }
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+#printSheet{display:none}
+@media print{
+  @page{margin:0}
+  body{background:#fff;padding:0;margin:0}
+  .wrap{display:none}
+  #printSheet{display:block}
+  #printSheet img{display:block;height:auto;max-width:none}
+}
