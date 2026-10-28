@@ -14,11 +14,21 @@ const TEST={
   star5:(x,y)=>inPoly(x,y*1.05-0.05,STAR5),
   heart:(x,y)=>{const hx=x*1.14,hy=-y*1.125+0.125,a=hx*hx+hy*hy-1;return a*a*a-hx*hx*hy*hy*hy<=0}
 };
-// På diagonala plattor följer hjärtats nedre kanter rutnätet (45°): ett V med två runda lober.
-// Formen är anpassad efter Hamas lilla hjärtplatta (storlek 15).
-const TEST_DIAGONAL={
-  heart:(x,y)=>{x=Math.abs(x);return(y>=-0.12&&x<=1-y)||((x-0.5)**2+(y+0.12)**2<=0.52*0.52)}
-};
+/* Hjärta på diagonal platta, byggt direkt i rutnätet som Hamas lilla hjärta: en kvadrat med n×n
+   piggar (spetsen nedåt) och en lob på var och en av de två övre sidorna. Loben är k rader djup och
+   lika bred som kvadraten, plus en kort rad ytterst närmast skåran som rundar toppen.
+   Hamas hjärta: n=7, k=4 och 2 extra, 49 + 30 + 30 = 109 piggar. u och v är rutnätets axlar. */
+function diagonalHeart(D){
+  // storleken är bredden i pärlsteg; den bredaste raden har n+k piggar med √2 mellan
+  const n=Math.max(3,Math.round(((D-1)/Math.SQRT2+1)/(11/7))),k=Math.round(n*4/7);
+  const a=Math.round(n/7),b=Math.max(a,Math.round(3*n/7)-1),pts=[];
+  for(let u=0;u<n;u++)for(let v=0;v<n;v++)pts.push([u,v]);
+  const lobe=[];
+  for(let u=0;u<n;u++)for(let d=1;d<=k;d++)lobe.push([u,-d]);
+  for(let u=a;u<=b;u++)lobe.push([u,-k-1]);
+  for(const[u,v]of lobe)pts.push([u,v],[v,u]);
+  return pts;
+}
 
 export const layoutKey=({shape,size,rw,rh,grid})=>[shape,size,rw,rh,grid].join('|');
 
@@ -30,10 +40,14 @@ export function makeLayout(p){
   const cells=[];let offset=false;
   if(p.shape==='rect'){for(let r=0;r<p.rh;r++)for(let c=0;c<p.rw;c++)cells.push({x:c,y:r,row:r})}
   else{
-    const D=p.size,half=D/2+0.05,diagonal=p.grid==='diagonal',test=(diagonal&&TEST_DIAGONAL[p.shape])||TEST[p.shape];
+    const D=p.size,half=D/2+0.05,diagonal=p.grid==='diagonal',test=TEST[p.shape];
     // diagonala och förskjutna rader har halvt steg mellan raderna, så grannarna hittas på samma sätt
     offset=p.grid==='offset'||diagonal;
-    if(diagonal){
+    if(diagonal&&p.shape==='heart'){
+      const pts=diagonalHeart(D),top=Math.min(...pts.map(([u,v])=>u+v));
+      for(const[u,v]of pts)cells.push({x:(u-v)*Math.SQRT1_2,y:(u+v)*Math.SQRT1_2,row:u+v-top});
+    }
+    else if(diagonal){
       // kvadratiskt rutnät vridet 45°: rader med √½ mellanrum, √2 mellan pinnarna i raden, varannan rad förskjuten
       const h=Math.SQRT1_2,Rr=Math.ceil(half/h)+1,K=Math.ceil(half/(2*h))+1;
       for(let r=-Rr;r<=Rr;r++){const sh=(r&1)?h:0;for(let k=-K;k<=K;k++){const x=k*2*h+sh,y=r*h;if(test(x/half,y/half))cells.push({x,y,row:r+Rr})}}

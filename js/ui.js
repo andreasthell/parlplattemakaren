@@ -54,7 +54,7 @@ document.querySelectorAll('[data-shape]').forEach(b=>b.onclick=()=>{S.shape=b.da
 // Hamas plattor (midi), uppmätta från foton: storleken är den som ger samma pinnar som plattan
 const PRESETS={
   rect:{shape:'rect',rw:29,rh:29,plate:29},
-  round:{shape:'round',size:29,grid:'offset'},
+  round:{shape:'round',size:28,grid:'offset'},
   hex:{shape:'hex',size:15,grid:'offset'},
   star6:{shape:'star6',size:19,grid:'offset'},
   heart:{shape:'heart',size:15,grid:'diagonal'},
