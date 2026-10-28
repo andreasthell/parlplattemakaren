@@ -18,6 +18,7 @@ const ASSETS=[
   'js/state.js',
   'js/ui.js',
   'js/util.js',
+  'js/version.js',
   'fonts/atkinson-hyperlegible-400-latin.woff2',
   'fonts/atkinson-hyperlegible-400-latin-ext.woff2',
   'fonts/atkinson-hyperlegible-700-latin.woff2',

@@ -36,6 +36,8 @@ jobs:
           # ny version i service workern gör att installerade appar hämtar om allt
           sed -i "s/^const VERSION='dev';/const VERSION='${GITHUB_SHA::12}';/" _site/sw.js
           grep -q "^const VERSION='${GITHUB_SHA::12}';" _site/sw.js
+          # byggnummer som visas längst ner på sidan
+          echo "export const BUILD={number:'${GITHUB_RUN_NUMBER}',sha:'${GITHUB_SHA::7}',date:'$(date -u +%F)'};" > _site/js/version.js
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

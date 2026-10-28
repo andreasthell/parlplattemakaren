@@ -7,6 +7,7 @@ import{cv,geo,render,drawThumb}from'./render.js';
 import{invalidatePrint,printPattern,downloadPattern}from'./print.js';
 import{S,app,savePal,saveDone}from'./state.js';
 import{$,fmt,cm}from'./util.js';
+import{BUILD}from'./version.js';
 
 function updateInfo(){
   const R=app.R,done=app.done,L=R.L,st=$('stats');
@@ -105,4 +106,14 @@ document.fonts&&document.fonts.ready.then(render);
 
 buildPal();buildSamples();syncShapeUI();setImage(sampleImage('sun'),'Exempel: Solen','sun');
 
-if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+// byggnummer, så att man kan se vilken version som körs
+$('build').textContent=BUILD.number==='dev'?'Utvecklingsversion'
+  :`Version ${BUILD.number} · ${new Date(BUILD.date+'T12:00:00Z').toLocaleDateString('sv-SE',{day:'numeric',month:'short',year:'numeric'})} · ${BUILD.sha}`;
+
+if('serviceWorker' in navigator){
+  // när en ny version tar över visas en knapp för att ladda om; inte vid allra första installationen
+  const hadController=!!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadController)$('updated').hidden=false});
+  $('reload').onclick=()=>location.reload();
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}

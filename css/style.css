@@ -109,6 +109,10 @@ body.beading #cv{max-width:none;cursor:pointer}
   .pal{grid-template-columns:repeat(auto-fill,minmax(38px,1fr))}
 }
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+.foot{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
+.foot #updated{display:flex;align-items:center;gap:10px;color:var(--ink)}
+.foot #updated[hidden]{display:none}
+.foot #build{margin-left:auto;font-variant-numeric:tabular-nums}
 /* Utskriftsarket ligger utanför skärmen i stället för display:none, så att Safari på iPad hinner ladda bilden */
 #printSheet{position:absolute;left:-10000px;top:0;width:1px;height:1px;overflow:hidden}
 #printSheet img{display:block;height:auto;max-width:none}
