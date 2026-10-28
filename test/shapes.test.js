@@ -27,7 +27,6 @@ const COUNTS={
   'round/offset':[73,211,769,1843,3403],'round/square':[69,177,665,1597,2941],
   'hex/offset':[61,169,631,1519,2791],'hex/square':[47,147,545,1319,2429],
   'star6/offset':[37,121,433,1093,1837],'star6/square':[37,95,373,895,1631],
-  'heart/offset':[69,188,701,1678,3069],'heart/square':[58,163,608,1450,2666],
 };
 for(const[key,want]of Object.entries(COUNTS)){
   const[shape,grid]=key.split('/');
@@ -38,22 +37,22 @@ for(const[key,want]of Object.entries(COUNTS)){
 
 test('pärlornas mittpunkter ryms inom angiven storlek',()=>{
   // formen testas mot radien D/2+0,05, så avståndet mellan yttersta mittpunkterna är högst D+0,1
-  for(const shape of['round','hex','star6','heart'])for(const grid of['offset','square'])for(const D of SIZES){
+  for(const shape of['round','hex','star6'])for(const grid of['offset','square'])for(const D of SIZES){
     const L=layout(shape,D,grid);
     assert.ok(L.maxX-L.minX<=D+0.1&&L.maxY-L.minY<=D+0.1,`${shape}/${grid}/${D}: ${L.bw}×${L.bh}`);
   }
 });
 
 test('rund, sexkant och stjärnor är spegelsymmetriska i sidled',()=>{
-  for(const shape of['round','hex','star6','heart'])for(const grid of['offset','square'])for(const D of SIZES){
+  for(const shape of['round','hex','star6'])for(const grid of['offset','square'])for(const D of SIZES){
     const L=layout(shape,D,grid),mid=(L.minX+L.maxX)/2;
     const set=new Set(L.cells.map(c=>c.row+':'+(c.x-mid)));
     for(const c of L.cells)assert.ok(set.has(c.row+':'+(mid-c.x)),`${shape}/${grid}/${D}`);
   }
 });
 
-test('grannar är ömsesidiga och högst 6 (förskjutna) eller 4 (raka, diagonala)',()=>{
-  for(const shape of['round','hex','star6','heart'])for(const grid of['offset','square','diagonal']){
+test('grannar är ömsesidiga och högst 6 (förskjutna) eller 4 (raka)',()=>{
+  for(const shape of['round','hex','star6'])for(const grid of['offset','square']){
     const L=layout(shape,29,grid),max=grid==='offset'?6:4;
     L.cells.forEach((c,i)=>{
       assert.ok(c.nb.length<=max);
@@ -70,13 +69,6 @@ test('samma inställningar ger samma layout från cachen',()=>{
 
 const rowCounts=L=>{const m=new Map();for(const c of L.cells)m.set(c.row,(m.get(c.row)||0)+1);return[...m.keys()].sort((a,b)=>a-b).map(k=>m.get(k))};
 
-test('diagonala grannar ligger ett pärlsteg bort snett ovanför och under',()=>{
-  const L=layout('heart',15,'diagonal');
-  for(const c of L.cells)for(const j of c.nb){const o=L.cells[j];
-    assert.ok(Math.abs(Math.hypot(o.x-c.x,o.y-c.y)-1)<1e-9);assert.equal(Math.abs(o.row-c.row),1)}
-});
-
-// Hamas plattor (midi), räknade från foton av plattorna
 test('Hama liten sexkant: storlek 15 ger 169 piggar, 8 till 15 per rad',()=>{
   assert.deepEqual(rowCounts(layout('hex',15)),[8,9,10,11,12,13,14,15,14,13,12,11,10,9,8]);
 });
@@ -85,20 +77,6 @@ test('Hama liten stjärna: storlek 19 ger 181 piggar, uddar på 5 rader och 16 i
   assert.equal(L.cells.length,181);
   assert.deepEqual(rowCounts(L),[1,2,3,4,5,16,15,14,13,12,11,12,13,14,15,16,5,4,3,2,1]);
 });
-test('Hama litet hjärta: diagonalt, 49 i kvadraten och 30 i varje lob',()=>{
-  const L=layout('heart',15,'diagonal'),r=rowCounts(L);
-  assert.equal(L.cells.length,109);
-  assert.equal(r.length,17);
-  // 1 till 10 från spetsen och 11 i raden ovanför, 2 + 2 piggar högst upp
-  assert.deepEqual(r.slice(-11),[11,10,9,8,7,6,5,4,3,2,1]);
-  assert.equal(r[0],4);
-});
-test('diagonala hjärtan är spegelsymmetriska i alla storlekar',()=>{
-  for(const D of[9,15,22,29,45,61]){
-    const L=layout('heart',D,'diagonal'),set=new Set(L.cells.map(c=>c.row+':'+Math.round(c.x*1000)));
-    for(const c of L.cells)assert.ok(set.has(c.row+':'+Math.round(-c.x*1000)),`storlek ${D}`);
-  }
-});
 test('ringar: ring r har 6·r piggar, storlek 29 ger 14 ringar och 631 piggar (Hama stor rund)',()=>{
   const L=layout('round',29,'rings');
   assert.equal(L.cells.length,631);
@@ -106,14 +84,15 @@ test('ringar: ring r har 6·r piggar, storlek 29 ger 14 ringar och 631 piggar (H
   for(const[r,n]of byR)assert.equal(n,r?6*r:1,`ring ${r}`);
   assert.equal(Math.round(L.bw),29);
 });
-test('Hamas lilla hjärta (uppmätt mall): 121 piggar, spegelsymmetriskt, inga piggar för tätt',()=>{
-  const L=makeLayout({shape:'heart',size:15,rw:29,rh:29,grid:'diagonal',board:'hama-heart'});
+test('hjärtat är Hamas uppmätta platta i alla storlekar och mönster: 121 piggar, spegelsymmetriskt, inga för tätt',()=>{
+  for(const D of[9,29,61])for(const grid of['offset','square','rings'])assert.equal(layout('heart',D,grid).cells.length,121);
+  const L=layout('heart',15,'offset');
   assert.equal(L.cells.length,121);
   for(const c of L.cells)assert.ok(L.cells.some(o=>Math.hypot(o.x+c.x,o.y-c.y)<1e-6),'spegelbild saknas');
   for(const c of L.cells)for(const o of L.cells)if(o!==c)assert.ok(Math.hypot(o.x-c.x,o.y-c.y)>0.8);
 });
 test('plattor utan rutnät: grannar är ömsesidiga och felspridningen går framåt',()=>{
-  for(const L of[layout('round',29,'rings'),makeLayout({shape:'heart',size:15,rw:1,rh:1,grid:'diagonal',board:'hama-heart'})])
+  for(const L of[layout('round',29,'rings'),layout('heart',15)])
     L.cells.forEach((c,i)=>{
       for(const j of c.nb)assert.ok(L.cells[j].nb.includes(i));
       for(const[j]of c.down)assert.ok(j>i);
