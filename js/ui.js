@@ -1,6 +1,7 @@
 /* ---------- UI ---------- */
 import{lum}from'./color.js';
 import{PAL}from'./palette.js';
+import{makeLayout}from'./shapes.js';
 import{resetScaledCache,computeBg,compute}from'./image.js';
 import{SAMPLES,sampleImage}from'./samples.js';
 import{cv,geo,render,drawThumb}from'./render.js';
@@ -27,7 +28,7 @@ function updateInfo(){
 }
 
 let pending=false;
-function update(){if(pending)return;pending=true;requestAnimationFrame(()=>{pending=false;compute();render();drawThumb();updateInfo();invalidatePrint();$('printBox').hidden=true})}
+function update(){if(pending)return;pending=true;requestAnimationFrame(()=>{pending=false;compute();render();drawThumb();updateInfo();updatePegs();invalidatePrint();$('printBox').hidden=true})}
 
 function buildPal(){const pal=$('pal');pal.innerHTML='';PAL.forEach((p,i)=>{const b=document.createElement('button');b.style.background=p.hex;b.title=p.name;b.setAttribute('aria-label',p.name);b.setAttribute('aria-pressed',S.enabled.has(i));
   b.onclick=()=>{S.enabled.has(i)?S.enabled.delete(i):S.enabled.add(i);b.setAttribute('aria-pressed',S.enabled.has(i));savePal();update()};pal.appendChild(b)})}
@@ -36,16 +37,41 @@ $('palNone').onclick=()=>{S.enabled=new Set();buildPal();savePal();update()};
 
 function seg(a,b,key,va,vb,after){const set=v=>{S[key]=v;$(a).setAttribute('aria-pressed',v===va);$(b).setAttribute('aria-pressed',v===vb);after&&after()};$(a).onclick=()=>set(va);$(b).onclick=()=>set(vb);return set}
 seg('fitCover','fitContain','fit','cover','contain',update);
-const setGrid=seg('gSquare','gOffset','grid','square','offset',update);
+// pinnarnas mönster har tre val
+const GRIDS={gSquare:'square',gOffset:'offset',gDiagonal:'diagonal'};
+function setGrid(v){S.grid=v;for(const id in GRIDS)$(id).setAttribute('aria-pressed',GRIDS[id]===v);update()}
+for(const id in GRIDS)$(id).onclick=()=>{setGrid(GRIDS[id]);$('preset').value=''};
 seg('vBeads','vSym','view','beads','sym',render);
 
 function syncShapeUI(){
   document.querySelectorAll('[data-shape]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.shape===S.shape));
   const rect=S.shape==='rect';$('rectOpts').hidden=!rect;$('shapeOpts').hidden=rect;$('gridRow').hidden=rect;$('gridNote').hidden=rect;
 }
-document.querySelectorAll('[data-shape]').forEach(b=>b.onclick=()=>{S.shape=b.dataset.shape;
-  if(S.shape==='heart')setGrid('square');else if(S.shape!=='rect')setGrid('offset');
+document.querySelectorAll('[data-shape]').forEach(b=>b.onclick=()=>{S.shape=b.dataset.shape;$('preset').value='';
+  if(S.shape==='heart')setGrid('diagonal');else if(S.shape!=='rect')setGrid('offset');
   syncShapeUI();update()});
+
+// Hamas plattor (midi), uppmätta från foton: storleken är den som ger samma pinnar som plattan
+const PRESETS={
+  rect:{shape:'rect',rw:29,rh:29,plate:29},
+  round:{shape:'round',size:28,grid:'offset'},
+  hex:{shape:'hex',size:15,grid:'offset'},
+  star6:{shape:'star6',size:19,grid:'offset'},
+  heart:{shape:'heart',size:15,grid:'diagonal'},
+};
+$('preset').onchange=e=>{const p=PRESETS[e.target.value];if(!p)return;
+  Object.assign(S,p,{bead:'5'});$('bead').value='5';
+  if(p.shape==='rect'){$('rw').value=p.rw;$('rh').value=p.rh;$('plate').value=p.plate}
+  else{$('size').value=p.size;$('sizeV').textContent=p.size;setGrid(p.grid)}
+  syncShapeUI();update()};
+$('size').addEventListener('input',()=>$('preset').value='');
+for(const id of['rw','rh','plate'])$(id).addEventListener('change',()=>$('preset').value='');
+
+// antal piggar, så att man kan jämföra med sin platta
+function updatePegs(){
+  const L=makeLayout(S),rows=new Map();for(const c of L.cells)rows.set(c.row,(rows.get(c.row)||0)+1);
+  $('pegInfo').textContent=`${fmt(L.cells.length)} piggar i ${rows.size} rader, ${Math.max(...rows.values())} i den bredaste raden`;
+}
 
 function slider(id,key,f=v=>v,label=v=>v){const el=$(id),out=$(id+'V');const h=()=>{S[key]=f(+el.value);if(out)out.textContent=label(+el.value);update()};el.oninput=h;if(out)out.textContent=label(+el.value)}
 slider('zoom','zoom',v=>v/100,v=>v+' %');slider('panX','panX',v=>v/100);slider('panY','panY',v=>v/100);

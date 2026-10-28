@@ -53,8 +53,8 @@ test('rund, sexkant och stjärnor är spegelsymmetriska i sidled',()=>{
   }
 });
 
-test('grannar är ömsesidiga och högst 6 (förskjutna) eller 4 (raka)',()=>{
-  for(const shape of['round','hex','star6','heart'])for(const grid of['offset','square']){
+test('grannar är ömsesidiga och högst 6 (förskjutna) eller 4 (raka, diagonala)',()=>{
+  for(const shape of['round','hex','star6','heart'])for(const grid of['offset','square','diagonal']){
     const L=layout(shape,29,grid),max=grid==='offset'?6:4;
     L.cells.forEach((c,i)=>{
       assert.ok(c.nb.length<=max);
@@ -67,4 +67,39 @@ test('samma inställningar ger samma layout från cachen',()=>{
   const a=layout('round',29),b=layout('round',29);
   assert.equal(a,b);
   assert.notEqual(layout('round',31),a);
+});
+
+const rowCounts=L=>{const m=new Map();for(const c of L.cells)m.set(c.row,(m.get(c.row)||0)+1);return[...m.keys()].sort((a,b)=>a-b).map(k=>m.get(k))};
+
+test('diagonala grannar ligger ett pärlsteg bort snett ovanför och under',()=>{
+  const L=layout('heart',15,'diagonal');
+  for(const c of L.cells)for(const j of c.nb){const o=L.cells[j];
+    assert.ok(Math.abs(Math.hypot(o.x-c.x,o.y-c.y)-1)<1e-9);assert.equal(Math.abs(o.row-c.row),1)}
+});
+
+// Hamas plattor (midi), räknade från foton av plattorna
+test('Hama liten sexkant: storlek 15 ger 169 piggar, 8 till 15 per rad',()=>{
+  assert.deepEqual(rowCounts(layout('hex',15)),[8,9,10,11,12,13,14,15,14,13,12,11,10,9,8]);
+});
+test('Hama liten stjärna: storlek 19 ger 181 piggar, uddar på 5 rader och 16 i bredaste raden',()=>{
+  const L=layout('star6',19);
+  assert.equal(L.cells.length,181);
+  assert.deepEqual(rowCounts(L),[1,2,3,4,5,16,15,14,13,12,11,12,13,14,15,16,5,4,3,2,1]);
+});
+test('Hama litet hjärta: diagonalt, 49 i kvadraten och 30 i varje lob',()=>{
+  const L=layout('heart',15,'diagonal'),r=rowCounts(L);
+  assert.equal(L.cells.length,109);
+  assert.equal(r.length,17);
+  // 1 till 10 från spetsen och 11 i raden ovanför, 2 + 2 piggar högst upp
+  assert.deepEqual(r.slice(-11),[11,10,9,8,7,6,5,4,3,2,1]);
+  assert.equal(r[0],4);
+});
+test('diagonala hjärtan är spegelsymmetriska i alla storlekar',()=>{
+  for(const D of[9,15,22,29,45,61]){
+    const L=layout('heart',D,'diagonal'),set=new Set(L.cells.map(c=>c.row+':'+Math.round(c.x*1000)));
+    for(const c of L.cells)assert.ok(set.has(c.row+':'+Math.round(-c.x*1000)),`storlek ${D}`);
+  }
+});
+test('Hama stor rund: storlek 28 ger 29 i den bredaste raden',()=>{
+  assert.equal(Math.max(...rowCounts(layout('round',28))),29);
 });
