@@ -40,6 +40,6 @@ Lägger du till en fil i `css/`, `js/`, `fonts/` eller `icons/` måste den ocks�
 
 ## Publicering
 
-`.github/workflows/pages.yml` kör testerna och publicerar till GitHub Pages vid varje push till `main`. Versionen i `sw.js` byts mot commitens SHA, så installerade appar hämtar den nya versionen nästa gång de startas med nät.
+`.github/workflows/pages.yml` kör testerna och publicerar till GitHub Pages vid varje push till `main`. Versionen i `sw.js` byts mot commitens SHA, så installerade appar hämtar den nya versionen nästa gång de startas med nät. `js/version.js` skrivs över med byggnummer, datum och SHA, som visas längst ner på sidan; när en ny version har hämtats visas en knapp för att ladda om.
 
 Första gången: välj **Settings → Pages → Build and deployment → Source: GitHub Actions** i repot.
