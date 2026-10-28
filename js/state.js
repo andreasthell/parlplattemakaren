@@ -2,7 +2,7 @@
 import{PAL}from'./palette.js';
 import{layoutKey}from'./shapes.js';
 
-export const S={img:null,shape:'round',size:29,rw:29,rh:29,plate:29,grid:'rings',bead:'5',fit:'cover',zoom:1,panX:0,panY:0,
+export const S={img:null,shape:'round',size:29,rw:29,rh:29,plate:29,grid:'rings',heart:'small',bead:'5',fit:'cover',zoom:1,panX:0,panY:0,
   maxc:12,enabled:new Set(PAL.map((_,i)=>i)),bright:0,contrast:0,sat:0,despeckle:true,dither:false,bg:false,bgTol:14,view:'beads',hl:-1,mode:'edit',bz:1};
 try{const saved=JSON.parse(localStorage.getItem('pp-enabled')||'null');if(Array.isArray(saved)&&saved.length){S.enabled=new Set(PAL.map((p,i)=>saved.includes(p.code)?i:-1).filter(i=>i>=0))}}catch(e){}
 

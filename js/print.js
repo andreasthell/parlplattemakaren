@@ -57,7 +57,7 @@ function drawPrint(resolve){
     x.textAlign='center';x.fillStyle=lum(col.rgb)>140?'#1A1F2E':'#FFFFFF';x.font=`700 ${Math.round(28*u)}px ${body}`;x.fillText(it.sym,cx+r,cy+2*u);
     x.textAlign='left';x.fillStyle='#1A1F2E';x.font=`${Math.round(32*u)}px ${body}`;x.fillText(col.name,cx+2*r+18*u,cy);
     x.textAlign='right';x.font=`700 ${Math.round(32*u)}px ${body}`;x.fillText(fmt(it.count),cx+colW-50*u,cy);x.textAlign='left'});
-  const name=`parlmonster-${S.shape}-${L.rect?S.rw+'x'+S.rh:S.size}.png`;
+  const name=`parlmonster-${S.shape}-${L.rect?S.rw+'x'+S.rh:S.shape==='heart'?(S.heart==='large'?'stort':'litet'):S.size}.png`;
   c.toBlob(async b=>{const buf=await b.arrayBuffer(),blob=new Blob([addPhys(buf,dpi)],{type:'image/png'});
     if(lastUrl)URL.revokeObjectURL(lastUrl);lastUrl=URL.createObjectURL(blob);
     resolve({blob,url:lastUrl,name,widthIn:W/dpi,wide:L.bw*mm>190,widthCm:cm(L.bw),canvas:c,dpi,files:{}})},'image/png');
