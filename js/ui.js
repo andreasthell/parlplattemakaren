@@ -38,38 +38,41 @@ $('palNone').onclick=()=>{S.enabled=new Set();buildPal();savePal();update()};
 function seg(a,b,key,va,vb,after){const set=v=>{S[key]=v;$(a).setAttribute('aria-pressed',v===va);$(b).setAttribute('aria-pressed',v===vb);after&&after()};$(a).onclick=()=>set(va);$(b).onclick=()=>set(vb);return set}
 seg('fitCover','fitContain','fit','cover','contain',update);
 // pinnarnas mönster har tre val
-const GRIDS={gSquare:'square',gOffset:'offset',gDiagonal:'diagonal'};
+const GRIDS={gSquare:'square',gOffset:'offset',gDiagonal:'diagonal',gRings:'rings'};
 function setGrid(v){S.grid=v;for(const id in GRIDS)$(id).setAttribute('aria-pressed',GRIDS[id]===v);update()}
-for(const id in GRIDS)$(id).onclick=()=>{setGrid(GRIDS[id]);$('preset').value=''};
+for(const id in GRIDS)$(id).onclick=()=>{S.board=null;setGrid(GRIDS[id]);$('preset').value=''};
 seg('vBeads','vSym','view','beads','sym',render);
 
 function syncShapeUI(){
   document.querySelectorAll('[data-shape]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.shape===S.shape));
   const rect=S.shape==='rect';$('rectOpts').hidden=!rect;$('shapeOpts').hidden=rect;$('gridRow').hidden=rect;$('gridNote').hidden=rect;
 }
-document.querySelectorAll('[data-shape]').forEach(b=>b.onclick=()=>{S.shape=b.dataset.shape;$('preset').value='';
-  if(S.shape==='heart')setGrid('diagonal');else if(S.shape!=='rect')setGrid('offset');
+document.querySelectorAll('[data-shape]').forEach(b=>b.onclick=()=>{S.shape=b.dataset.shape;S.board=null;$('preset').value='';
+  if(S.shape==='heart')setGrid('diagonal');else if(S.shape==='round')setGrid('rings');else if(S.shape!=='rect')setGrid('offset');
   syncShapeUI();update()});
 
-// Hamas plattor (midi), uppmätta från foton: storleken är den som ger samma pinnar som plattan
+// Hamas plattor (midi), uppmätta från foton: storleken är den som ger samma piggar som plattan.
+// Det lilla hjärtat går inte att beskriva med ett rutnät och har en egen uppmätt mall (board).
 const PRESETS={
-  rect:{shape:'rect',rw:29,rh:29,plate:29},
-  round:{shape:'round',size:28,grid:'offset'},
-  hex:{shape:'hex',size:15,grid:'offset'},
-  star6:{shape:'star6',size:19,grid:'offset'},
-  heart:{shape:'heart',size:15,grid:'diagonal'},
+  rect:{shape:'rect',rw:29,rh:29,plate:29,board:null},
+  round:{shape:'round',size:29,grid:'rings',board:null},
+  hex:{shape:'hex',size:15,grid:'offset',board:null},
+  star6:{shape:'star6',size:19,grid:'offset',board:null},
+  heart:{shape:'heart',size:15,grid:'diagonal',board:'hama-heart'},
 };
 $('preset').onchange=e=>{const p=PRESETS[e.target.value];if(!p)return;
-  Object.assign(S,p,{bead:'5'});$('bead').value='5';
+  Object.assign(S,p);
   if(p.shape==='rect'){$('rw').value=p.rw;$('rh').value=p.rh;$('plate').value=p.plate}
   else{$('size').value=p.size;$('sizeV').textContent=p.size;setGrid(p.grid)}
   syncShapeUI();update()};
-$('size').addEventListener('input',()=>$('preset').value='');
+$('size').addEventListener('input',()=>{$('preset').value='';if(S.board){S.board=null;update()}});
 for(const id of['rw','rh','plate'])$(id).addEventListener('change',()=>$('preset').value='');
 
 // antal piggar, så att man kan jämföra med sin platta
 function updatePegs(){
-  const L=makeLayout(S),rows=new Map();for(const c of L.cells)rows.set(c.row,(rows.get(c.row)||0)+1);
+  const L=makeLayout(S);
+  if(L.info){$('pegInfo').textContent=`${fmt(L.cells.length)} piggar, ${L.info}, ${Math.round(L.bw)} tvärs över`;return}
+  const rows=new Map();for(const c of L.cells)rows.set(c.row,(rows.get(c.row)||0)+1);
   $('pegInfo').textContent=`${fmt(L.cells.length)} piggar i ${rows.size} rader, ${Math.max(...rows.values())} i den bredaste raden`;
 }
 
@@ -78,7 +81,6 @@ slider('zoom','zoom',v=>v/100,v=>v+' %');slider('panX','panX',v=>v/100);slider('
 slider('size','size');slider('maxc','maxc');slider('bright','bright');slider('contrast','contrast');slider('sat','sat');slider('bgTol','bgTol');
 function num(id,key,min,max){const el=$(id);el.onchange=()=>{let v=Math.round(+el.value||0);v=Math.min(max,Math.max(min,v));el.value=v;S[key]=v;update()}}
 num('rw','rw',5,120);num('rh','rh',5,120);num('plate','plate',0,120);
-$('bead').onchange=e=>{S.bead=e.target.value;update()};
 $('despeckle').onchange=e=>{S.despeckle=e.target.checked;update()};
 $('dither').onchange=e=>{S.dither=e.target.checked;update()};
 $('bg').onchange=e=>{S.bg=e.target.checked;$('bgTolRow').hidden=!S.bg;update()};

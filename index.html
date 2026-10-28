@@ -63,8 +63,7 @@
           <button data-shape="rect" aria-pressed="false"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>Fyrkant</button>
           <button data-shape="round" aria-pressed="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>Rund</button>
           <button data-shape="hex" aria-pressed="false"><svg viewBox="0 0 24 24"><polygon points="22,12 17,20.7 7,20.7 2,12 7,3.3 17,3.3"/></svg>Sexkant</button>
-          <button data-shape="star6" aria-pressed="false"><svg viewBox="0 0 24 24"><polygon points="12,1 15.2,6.5 21.5,6.5 18.4,12 21.5,17.5 15.2,17.5 12,23 8.8,17.5 2.5,17.5 5.6,12 2.5,6.5 8.8,6.5"/></svg>Stjärna 6</button>
-          <button data-shape="star5" aria-pressed="false"><svg viewBox="0 0 24 24"><polygon points="12,1.5 14.9,8.6 22.5,9.1 16.6,13.9 18.5,21.4 12,17.3 5.5,21.4 7.4,13.9 1.5,9.1 9.1,8.6"/></svg>Stjärna 5</button>
+          <button data-shape="star6" aria-pressed="false"><svg viewBox="0 0 24 24"><polygon points="12,1 15.2,6.5 21.5,6.5 18.4,12 21.5,17.5 15.2,17.5 12,23 8.8,17.5 2.5,17.5 5.6,12 2.5,6.5 8.8,6.5"/></svg>Stjärna</button>
           <button data-shape="heart" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M12 21.5 3.2 12.9C.6 10.3.9 6 4 4.2c2.6-1.5 5.7-.6 8 2.3 2.3-2.9 5.4-3.8 8-2.3 3.1 1.8 3.4 6.1.8 8.7z"/></svg>Hjärta</button>
         </div>
         <div id="rectOpts" class="two" hidden>
@@ -79,11 +78,9 @@
         <p class="note" id="pegInfo"></p>
         <div class="row" id="gridRow"><span>Pinnarnas mönster</span>
           <div class="seg" role="group" aria-label="Pinnarnas mönster">
-            <button id="gSquare" aria-pressed="false">Raka</button><button id="gOffset" aria-pressed="true">Förskjutna</button><button id="gDiagonal" aria-pressed="false">Diagonala</button>
+            <button id="gSquare" aria-pressed="false">Raka</button><button id="gOffset" aria-pressed="false">Förskjutna</button><button id="gDiagonal" aria-pressed="false">Diagonala</button><button id="gRings" aria-pressed="true">Ringar</button>
           </div></div>
-        <div class="row"><span>Pärlstorlek</span>
-          <select id="bead"><option value="2.5">Mini, 2,5 mm</option><option value="5" selected>Midi, 5 mm</option><option value="10">Maxi, 10 mm</option></select></div>
-        <p class="note" id="gridNote">Runda plattor, sexkanter och stjärnor har oftast förskjutna rader och hjärtan diagonala. Jämför antalet piggar med din platta.</p>
+        <p class="note" id="gridNote">Runda plattor har oftast piggarna i ringar, sexkanter och stjärnor förskjutna rader. Jämför antalet piggar med din platta.</p>
       </section>
 
       <section class="sec">
