@@ -99,3 +99,18 @@ test('plattor utan rutnät: grannar är ömsesidiga och felspridningen går fram
       if(c.down.length)assert.ok(Math.abs(c.down.reduce((s,[,w])=>s+w,0)-16)<1e-9);
     });
 });
+test('stort hjärta: 591 piggar, kvadraten 17×17 i rutnätet, spegelsymmetriskt, inga för tätt',()=>{
+  const L=makeLayout({shape:'heart',size:29,rw:29,rh:29,grid:'rings',heart:'large'});
+  assert.equal(L.cells.length,591);
+  for(const c of L.cells)assert.ok(L.cells.some(o=>Math.hypot(o.x+c.x,o.y-c.y)<1e-6),'spegelbild saknas');
+  let min=9;for(const c of L.cells)for(const o of L.cells)if(o!==c)min=Math.min(min,Math.hypot(o.x-c.x,o.y-c.y));
+  assert.ok(min>0.9,`minsta avstånd ${min}`);
+  // spetsen längst ned; längs var och en av de nedre kanterna sitter 22 piggar (21 i rutnätet och en båge)
+  const tip=L.cells.reduce((a,c)=>c.y>a.y?c:a);
+  const onEdge=s=>L.cells.filter(c=>Math.abs((c.x-tip.x)*s+(c.y-tip.y))*Math.SQRT1_2<0.3).length;
+  assert.equal(onEdge(1),22);assert.equal(onEdge(-1),22);
+});
+test('litet hjärta är kvar som standard',()=>{
+  assert.equal(makeLayout({shape:'heart',size:29,rw:29,rh:29,grid:'rings'}).cells.length,121);
+  assert.equal(makeLayout({shape:'heart',size:29,rw:29,rh:29,grid:'rings',heart:'small'}).cells.length,121);
+});

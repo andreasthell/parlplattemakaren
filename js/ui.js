@@ -42,12 +42,13 @@ const GRIDS={gSquare:'square',gOffset:'offset',gRings:'rings'};
 function setGrid(v){S.grid=v;for(const id in GRIDS)$(id).setAttribute('aria-pressed',GRIDS[id]===v);update()}
 for(const id in GRIDS)$(id).onclick=()=>setGrid(GRIDS[id]);
 seg('vBeads','vSym','view','beads','sym',render);
+seg('hSmall','hLarge','heart','small','large',update);
 
 function syncShapeUI(){
   document.querySelectorAll('[data-shape]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.shape===S.shape));
   // hjärtat är en uppmätt platta, så storlek och pinnmönster gäller inte där
   const rect=S.shape==='rect',fixed=rect||S.shape==='heart';
-  $('rectOpts').hidden=!rect;$('shapeOpts').hidden=fixed;$('gridRow').hidden=fixed;$('gridNote').hidden=fixed;
+  $('rectOpts').hidden=!rect;$('shapeOpts').hidden=fixed;$('gridRow').hidden=fixed;$('gridNote').hidden=fixed;$('heartRow').hidden=S.shape!=='heart';
 }
 // formknapparna väljer plattan i sin vanliga storlek (midi, uppmätt från foton);
 // storleken är den som ger samma piggar som plattan och kan sedan ändras med reglaget

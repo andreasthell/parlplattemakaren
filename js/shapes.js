@@ -12,7 +12,7 @@ const TEST={
   hex:(x,y)=>inPoly(x,y,HEX),
   star6:(x,y)=>inPoly(x,y,STAR6),
 };
-/* Hjärtat är en uppmätt hjärtplatta (foto): kvadraten (7×7) och lobernas tre inre rader sitter i det
+/* Litet hjärta, uppmätt hjärtplatta (foto): kvadraten (7×7) och lobernas tre inre rader sitter i det
    diagonala rutnätet, de yttre piggarna i bågar. Koordinater (u,v) i pärlsteg längs rutnätets axlar,
    kvadraten är 0..6; här vänster lob, den högra är spegelbilden (v,u). */
 const HEART_ARCS=[[-5.82,3.55],[-5.82,2.51],[-5.61,1.48],[-5.50,4.40],[-5.05,3.00],[-4.97,5.32],[-4.93,0.67],[-4.75,3.98],
@@ -24,6 +24,31 @@ function heartPoints(){
   for(let d=1;d<=3;d++)for(let v=0;v<7;v++)lobe.push([-d,v]);
   for(const[u,v]of lobe)pts.push([u,v],[v,u]);
   return pts.map(([u,v])=>[(u-v)*Math.SQRT1_2,(u+v)*Math.SQRT1_2]);
+}
+/* Stort hjärta, uppmätt från en bild rakt uppifrån: kvadraten 17×17 med spetsen i (0,0), u uppåt vänster
+   och v uppåt höger. Varje lob har tre hela rader i rutnätet, en fjärde med 6 + 6 och 88 piggar i bågar
+   (medelvärde av vänster lob och speglad höger lob). 289 + 151 + 151 = 591 piggar. */
+const BIG_HEART_ARCS=[
+  [19.83,7.49],[19.84,8.51],[19.96,6.28],[19.99,9.73],[20.69,6.98],[20.70,9.02],[20.90,10.29],[20.91,5.70],
+  [20.96,4.52],[20.97,8.00],[20.97,11.47],[21.01,12.58],[21.02,1.30],[21.02,2.36],[21.02,3.43],[21.02,14.70],
+  [21.03,13.65],[21.03,15.75],[21.04,0.24],[21.57,9.51],[21.58,6.50],[21.80,5.16],[21.80,10.83],[21.91,3.96],
+  [21.91,12.06],[21.93,7.48],[21.93,8.52],[21.98,2.80],[21.98,13.22],[22.01,1.68],[22.02,14.33],[22.03,0.58],
+  [22.05,15.41],[22.44,5.99],[22.45,10.00],[22.67,4.64],[22.69,11.36],[22.82,3.40],[22.82,12.62],[22.83,6.96],
+  [22.83,9.04],[22.90,13.79],[22.92,2.21],[22.97,8.00],[22.98,1.06],[22.98,14.94],[23.30,5.49],[23.31,10.50],
+  [23.58,11.87],[23.59,4.13],[23.72,6.46],[23.74,9.54],[23.75,2.85],[23.75,13.14],[23.84,1.65],[23.87,14.35],
+  [23.95,7.48],[23.96,8.53],[24.19,11.00],[24.20,4.99],[24.45,3.63],[24.45,12.36],[24.60,10.05],[24.64,2.32],
+  [24.64,5.95],[24.64,13.67],[24.89,6.95],[24.89,9.05],[24.99,8.00],[25.03,4.49],[25.05,11.51],[25.31,3.12],
+  [25.34,12.89],[25.48,5.43],[25.48,10.57],[25.81,6.44],[25.81,9.55],[25.90,4.01],[25.91,12.01],[25.96,7.46],
+  [25.96,8.50],[26.36,4.94],[26.38,11.08],[26.72,10.09],[26.73,5.93],[26.92,6.97],[26.93,9.03],[26.98,8.02]
+];
+function bigHeartPoints(){
+  const pts=[];
+  for(let u=0;u<17;u++)for(let v=0;v<17;v++)pts.push([u,v]);
+  const lobe=[...BIG_HEART_ARCS];
+  for(let u=17;u<20;u++)for(let v=0;v<17;v++)lobe.push([u,v]);
+  for(const v of[0,1,2,3,4,5,11,12,13,14,15,16])lobe.push([20,v]);
+  for(const[u,v]of lobe)pts.push([u,v],[v,u]);
+  return pts.map(([u,v])=>[(v-u)*Math.SQRT1_2,-(u+v)*Math.SQRT1_2]);
 }
 // runda plattor har piggarna i ringar runt mitten: ring r har 6·r piggar jämnt fördelade
 function ringPoints(R,test){
@@ -43,14 +68,14 @@ function pointLayout(pts,info){
   return{cells,offset:false,minX,maxX,minY,maxY,bw:maxX-minX+1,bh:maxY-minY+1,rect:false,info};
 }
 
-export const layoutKey=({shape,size,rw,rh,grid})=>[shape,size,rw,rh,grid].join('|');
+export const layoutKey=({shape,size,rw,rh,grid,heart})=>[shape,size,rw,rh,grid].join('|')+(shape==='heart'&&heart==='large'?'|large':'');
 
 /* Bygger plattans pinnar. p: {shape,size,rw,rh,grid}. Senaste resultatet sparas och återanvänds. */
 let lastKey='',last=null;
 export function makeLayout(p){
   const key=layoutKey(p);
   if(key===lastKey)return last;lastKey=key;
-  if(p.shape==='heart')return last=pointLayout(heartPoints(),'');
+  if(p.shape==='heart')return last=pointLayout(p.heart==='large'?bigHeartPoints():heartPoints(),'');
   if(p.grid==='rings'&&p.shape!=='rect'){const R=Math.max(1,Math.round((p.size-1)/2));
     return last=pointLayout(ringPoints(R,TEST[p.shape]),`${R} ringar runt mitten`)}
   const cells=[];let offset=false;
