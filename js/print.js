@@ -4,6 +4,7 @@ import{PAL}from'./palette.js';
 import{SHAPE_NAMES}from'./shapes.js';
 import{S,app}from'./state.js';
 import{$,tok,fmt,cm}from'./util.js';
+import{jpegToPdf}from'./pdf.js';
 
 const BEAD_NAMES={'2.5':'Mini 2,5 mm','5':'Midi 5 mm','10':'Maxi 10 mm'};
 
@@ -16,10 +17,11 @@ function addPhys(buf,dpi){
   const out=new Uint8Array(src.length+21);out.set(src.subarray(0,33));out.set(chunk,33);out.set(src.subarray(33),54);return out;
 }
 // utskriftsbilden byggs en gång och återanvänds tills mönstret ändras
-let lastUrl=null,pending=null;
-export function invalidatePrint(){pending=null;document.body.classList.remove('print-sheet')}
+// ready är samma resultat när det är färdigt, så att en knapp kan dela filen direkt i trycket
+let lastUrl=null,pending=null,ready=null;
+export function invalidatePrint(){pending=ready=null;document.body.classList.remove('print-sheet');resetButtons()}
 function buildPrint(){
-  if(!pending)pending=new Promise(resolve=>drawPrint(resolve));
+  if(!pending){const my=pending=new Promise(resolve=>drawPrint(resolve));my.then(p=>{if(pending===my)ready=p})}
   return pending;
 }
 function drawPrint(resolve){
@@ -59,7 +61,7 @@ function drawPrint(resolve){
   const name=`parlmonster-${S.shape}-${L.rect?S.rw+'x'+S.rh:S.size}.png`;
   c.toBlob(async b=>{const buf=await b.arrayBuffer(),blob=new Blob([addPhys(buf,dpi)],{type:'image/png'});
     if(lastUrl)URL.revokeObjectURL(lastUrl);lastUrl=URL.createObjectURL(blob);
-    resolve({blob,url:lastUrl,name,widthIn:W/dpi,wide:L.bw*mm>190,widthCm:cm(L.bw)})},'image/png');
+    resolve({blob,url:lastUrl,name,widthIn:W/dpi,wide:L.bw*mm>190,widthCm:cm(L.bw),canvas:c,dpi,files:{}})},'image/png');
 }
 function showPreview(p){
   $('printImg').src=p.url;$('printBox').hidden=false;
@@ -68,6 +70,8 @@ function showPreview(p){
 }
 
 export async function printPattern(){
+  // i hemskärmsappen på iPad gör window.print() ingenting, så där delas en PDF som kan skrivas ut i 100 %
+  if(navigator.standalone)return shareFile('print','pdf');
   const p=await buildPrint();showPreview(p);
   // utskriftsarket visar bara bilden, i sin fysiska bredd, så att 100 % blir verklig storlek
   const img=$('printSheetImg');img.style.width=p.widthIn+'in';
@@ -84,11 +88,49 @@ export async function printPattern(){
 addEventListener('afterprint',()=>document.body.classList.remove('print-sheet'));
 
 export async function downloadPattern(){
-  const p=await buildPrint();showPreview(p);
-  const file=new File([p.blob],p.name,{type:'image/png'});
   // på pekskärmar (iPad) ger delningsbladet Spara bild och Spara i Filer, en nedladdningslänk fungerar sämre där
-  if(matchMedia('(pointer:coarse)').matches&&navigator.canShare?.({files:[file]})){
-    try{await navigator.share({files:[file]});return}catch(e){if(e.name==='AbortError')return}
+  if(matchMedia('(pointer:coarse)').matches&&navigator.canShare)return shareFile('download','png');
+  const p=await buildPrint();showPreview(p);saveLink(p);
+}
+function saveLink(p){const a=document.createElement('a');a.href=p.url;a.download=p.name;document.body.appendChild(a);a.click();a.remove()}
+
+/* ---------- delning på iPad ---------- */
+const LABELS={print:'Skriv ut',download:'Ladda ner PNG'};
+function resetButtons(){for(const id in LABELS)$(id).textContent=LABELS[id]}
+
+async function makeFile(p,kind){
+  if(!p.files[kind]){
+    if(kind==='png')p.files.png=new File([p.blob],p.name,{type:'image/png'});
+    else{
+      const jpeg=await new Promise(r=>p.canvas.toBlob(r,'image/jpeg',0.92));
+      const pdf=jpegToPdf(new Uint8Array(await jpeg.arrayBuffer()),{width:p.canvas.width,height:p.canvas.height,dpi:p.dpi});
+      p.files.pdf=new File([pdf],p.name.replace(/\.png$/,'.pdf'),{type:'application/pdf'});
+    }
   }
-  const a=document.createElement('a');a.href=p.url;a.download=p.name;document.body.appendChild(a);a.click();a.remove();
+  return p.files[kind];
+}
+
+/* iOS kräver att delningen startar direkt efter trycket. Är filen redan klar delas den direkt;
+   annars förbereds den, och hinner iPaden glömma trycket får knappen texten Tryck igen. */
+async function shareFile(btn,kind){
+  const done=ready&&ready.files[kind];
+  if(done)return share(btn,done);
+  $(btn).textContent='Förbereder…';
+  const p=await buildPrint();showPreview(p);
+  const file=await makeFile(p,kind);
+  if(!navigator.canShare?.({files:[file]})){
+    resetButtons();
+    if(kind==='png')return saveLink(p);
+    const warn=$('printWarn');warn.hidden=false;
+    warn.textContent='Utskrift fungerar inte i hemskärmsappen på den här enheten. Öppna sidan i Safari och tryck på Skriv ut där.';
+    return;
+  }
+  return share(btn,file);
+}
+async function share(btn,file){
+  try{await navigator.share({files:[file]});resetButtons()}
+  catch(e){
+    if(e.name==='NotAllowedError'){$(btn).textContent=btn==='print'?'Tryck igen för att skriva ut':'Tryck igen för att spara';return}
+    resetButtons();
+  }
 }

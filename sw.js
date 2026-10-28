@@ -11,6 +11,7 @@ const ASSETS=[
   'js/color.js',
   'js/image.js',
   'js/palette.js',
+  'js/pdf.js',
   'js/print.js',
   'js/render.js',
   'js/samples.js',
