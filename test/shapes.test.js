@@ -69,22 +69,22 @@ test('samma inställningar ger samma layout från cachen',()=>{
 
 const rowCounts=L=>{const m=new Map();for(const c of L.cells)m.set(c.row,(m.get(c.row)||0)+1);return[...m.keys()].sort((a,b)=>a-b).map(k=>m.get(k))};
 
-test('Hama liten sexkant: storlek 15 ger 169 piggar, 8 till 15 per rad',()=>{
+test('liten sexkant: storlek 15 ger 169 piggar, 8 till 15 per rad',()=>{
   assert.deepEqual(rowCounts(layout('hex',15)),[8,9,10,11,12,13,14,15,14,13,12,11,10,9,8]);
 });
-test('Hama liten stjärna: storlek 19 ger 181 piggar, uddar på 5 rader och 16 i bredaste raden',()=>{
+test('liten stjärna: storlek 19 ger 181 piggar, uddar på 5 rader och 16 i bredaste raden',()=>{
   const L=layout('star6',19);
   assert.equal(L.cells.length,181);
   assert.deepEqual(rowCounts(L),[1,2,3,4,5,16,15,14,13,12,11,12,13,14,15,16,5,4,3,2,1]);
 });
-test('ringar: ring r har 6·r piggar, storlek 29 ger 14 ringar och 631 piggar (Hama stor rund)',()=>{
+test('ringar: ring r har 6·r piggar, storlek 29 ger 14 ringar och 631 piggar (stor rund platta)',()=>{
   const L=layout('round',29,'rings');
   assert.equal(L.cells.length,631);
   const byR=new Map();for(const c of L.cells){const r=Math.round(Math.hypot(c.x,c.y));byR.set(r,(byR.get(r)||0)+1)}
   for(const[r,n]of byR)assert.equal(n,r?6*r:1,`ring ${r}`);
   assert.equal(Math.round(L.bw),29);
 });
-test('hjärtat är Hamas uppmätta platta i alla storlekar och mönster: 121 piggar, spegelsymmetriskt, inga för tätt',()=>{
+test('hjärtat är den uppmätta hjärtplattan i alla storlekar och mönster: 121 piggar, spegelsymmetriskt, inga för tätt',()=>{
   for(const D of[9,29,61])for(const grid of['offset','square','rings'])assert.equal(layout('heart',D,grid).cells.length,121);
   const L=layout('heart',15,'offset');
   assert.equal(L.cells.length,121);

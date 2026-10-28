@@ -12,15 +12,15 @@ const TEST={
   hex:(x,y)=>inPoly(x,y,HEX),
   star6:(x,y)=>inPoly(x,y,STAR6),
 };
-/* Hjärtat är alltid Hamas lilla hjärta, uppmätt från foto: kvadraten (7×7) och lobernas tre inre rader sitter i det
+/* Hjärtat är en uppmätt hjärtplatta (foto): kvadraten (7×7) och lobernas tre inre rader sitter i det
    diagonala rutnätet, de yttre piggarna i bågar. Koordinater (u,v) i pärlsteg längs rutnätets axlar,
    kvadraten är 0..6; här vänster lob, den högra är spegelbilden (v,u). */
-const HAMA_HEART_ARCS=[[-5.82,3.55],[-5.82,2.51],[-5.61,1.48],[-5.50,4.40],[-5.05,3.00],[-4.97,5.32],[-4.93,0.67],[-4.75,3.98],
+const HEART_ARCS=[[-5.82,3.55],[-5.82,2.51],[-5.61,1.48],[-5.50,4.40],[-5.05,3.00],[-4.97,5.32],[-4.93,0.67],[-4.75,3.98],
   [-4.75,1.98],[-4.05,5.85],[-4.02,4.73],[-4.00,1.23],[-3.97,0.15],[-3.89,3.48],[-3.88,2.47]];
-function hamaHeart(){
+function heartPoints(){
   const pts=[];
   for(let u=0;u<7;u++)for(let v=0;v<7;v++)pts.push([u,v]);
-  const lobe=[...HAMA_HEART_ARCS];
+  const lobe=[...HEART_ARCS];
   for(let d=1;d<=3;d++)for(let v=0;v<7;v++)lobe.push([-d,v]);
   for(const[u,v]of lobe)pts.push([u,v],[v,u]);
   return pts.map(([u,v])=>[(u-v)*Math.SQRT1_2,(u+v)*Math.SQRT1_2]);
@@ -50,7 +50,7 @@ let lastKey='',last=null;
 export function makeLayout(p){
   const key=layoutKey(p);
   if(key===lastKey)return last;lastKey=key;
-  if(p.shape==='heart')return last=pointLayout(hamaHeart(),'Hamas lilla hjärta');
+  if(p.shape==='heart')return last=pointLayout(heartPoints(),'');
   if(p.grid==='rings'&&p.shape!=='rect'){const R=Math.max(1,Math.round((p.size-1)/2));
     return last=pointLayout(ringPoints(R,TEST[p.shape]),`${R} ringar runt mitten`)}
   const cells=[];let offset=false;

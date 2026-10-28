@@ -40,20 +40,17 @@ seg('fitCover','fitContain','fit','cover','contain',update);
 // pinnarnas mönster har tre val
 const GRIDS={gSquare:'square',gOffset:'offset',gRings:'rings'};
 function setGrid(v){S.grid=v;for(const id in GRIDS)$(id).setAttribute('aria-pressed',GRIDS[id]===v);update()}
-for(const id in GRIDS)$(id).onclick=()=>{setGrid(GRIDS[id]);$('preset').value=''};
+for(const id in GRIDS)$(id).onclick=()=>setGrid(GRIDS[id]);
 seg('vBeads','vSym','view','beads','sym',render);
 
 function syncShapeUI(){
   document.querySelectorAll('[data-shape]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.shape===S.shape));
-  // hjärtat är Hamas uppmätta platta, så storlek och pinnmönster gäller inte där
+  // hjärtat är en uppmätt platta, så storlek och pinnmönster gäller inte där
   const rect=S.shape==='rect',fixed=rect||S.shape==='heart';
   $('rectOpts').hidden=!rect;$('shapeOpts').hidden=fixed;$('gridRow').hidden=fixed;$('gridNote').hidden=fixed;
 }
-document.querySelectorAll('[data-shape]').forEach(b=>b.onclick=()=>{S.shape=b.dataset.shape;$('preset').value='';
-  if(S.shape==='round')setGrid('rings');else if(S.shape==='hex'||S.shape==='star6')setGrid('offset');
-  syncShapeUI();update()});
-
-// Hamas plattor (midi), uppmätta från foton: storleken är den som ger samma piggar som plattan.
+// formknapparna väljer plattan i sin vanliga storlek (midi, uppmätt från foton);
+// storleken är den som ger samma piggar som plattan och kan sedan ändras med reglaget
 const PRESETS={
   rect:{shape:'rect',rw:29,rh:29,plate:29},
   round:{shape:'round',size:29,grid:'rings'},
@@ -61,18 +58,16 @@ const PRESETS={
   star6:{shape:'star6',size:19,grid:'offset'},
   heart:{shape:'heart'},
 };
-$('preset').onchange=e=>{const p=PRESETS[e.target.value];if(!p)return;
+document.querySelectorAll('[data-shape]').forEach(b=>b.onclick=()=>{const p=PRESETS[b.dataset.shape];
   Object.assign(S,p);
   if(p.shape==='rect'){$('rw').value=p.rw;$('rh').value=p.rh;$('plate').value=p.plate}
   else if(p.size){$('size').value=p.size;$('sizeV').textContent=p.size;setGrid(p.grid)}
-  syncShapeUI();update()};
-$('size').addEventListener('input',()=>$('preset').value='');
-for(const id of['rw','rh','plate'])$(id).addEventListener('change',()=>$('preset').value='');
+  syncShapeUI();update()});
 
 // antal piggar, så att man kan jämföra med sin platta
 function updatePegs(){
   const L=makeLayout(S);
-  if(L.info){$('pegInfo').textContent=`${fmt(L.cells.length)} piggar, ${L.info}, ${Math.round(L.bw)} tvärs över`;return}
+  if('info'in L){$('pegInfo').textContent=[`${fmt(L.cells.length)} piggar`,L.info,`${Math.round(L.bw)} tvärs över`].filter(Boolean).join(', ');return}
   const rows=new Map();for(const c of L.cells)rows.set(c.row,(rows.get(c.row)||0)+1);
   $('pegInfo').textContent=`${fmt(L.cells.length)} piggar i ${rows.size} rader, ${Math.max(...rows.values())} i den bredaste raden`;
 }
