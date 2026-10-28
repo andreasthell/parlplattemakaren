@@ -16,6 +16,8 @@
   --peg:#2E3547; --board:#151A25; --hl:#F5C431; color-scheme:dark }
 
 *{box-sizing:border-box}
+/* hidden ska gälla även för element som har display:flex i klasserna nedan */
+[hidden]{display:none!important}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
 .wrap{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
@@ -63,6 +65,7 @@ button{font:inherit;cursor:pointer;color:var(--ink)}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
 .seg button{background:transparent;border:0;padding:6px 12px;font-size:13.5px;color:var(--muted)}
 .seg button+button{border-left:1px solid var(--line)}
+#gridRow{flex-wrap:wrap}
 .seg button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);font-weight:700}
 .two{display:flex;gap:10px;flex-wrap:wrap}
 .pal{display:grid;grid-template-columns:repeat(auto-fill,minmax(30px,1fr));gap:6px}
@@ -111,7 +114,6 @@ body.beading #cv{max-width:none;cursor:pointer}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 .foot{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
 .foot #updated{display:flex;align-items:center;gap:10px;color:var(--ink)}
-.foot #updated[hidden]{display:none}
 .foot #build{margin-left:auto;font-variant-numeric:tabular-nums}
 /* Utskriftsarket ligger utanför skärmen i stället för display:none, så att Safari på iPad hinner ladda bilden */
 #printSheet{position:absolute;left:-10000px;top:0;width:1px;height:1px;overflow:hidden}
