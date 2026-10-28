@@ -4,6 +4,7 @@ import{PAL}from'./palette.js';
 import{makeLayout}from'./shapes.js';
 import{resetScaledCache,computeBg,compute}from'./image.js';
 import{SAMPLES,sampleImage}from'./samples.js';
+import{randomPattern,drawPattern}from'./pattern.js';
 import{cv,geo,render,drawThumb}from'./render.js';
 import{invalidatePrint,printPattern,downloadPattern}from'./print.js';
 import{S,app,savePal,saveDone}from'./state.js';
@@ -96,6 +97,10 @@ const drop=$('drop');
 const urlHint=()=>{$('imgName').textContent='Länkar kan inte hämtas här. Högerklicka på bilden på webbsidan, välj Kopiera bild och klistra in med Ctrl+V.'};
 drop.addEventListener('drop',e=>{const f=e.dataTransfer.files[0];if(f)return loadFile(f);if(/^https?:/i.test(e.dataTransfer.getData('text/uri-list')||e.dataTransfer.getData('text/plain')||''))urlHint()});
 document.addEventListener('paste',e=>{const items=[...(e.clipboardData?.items||[])],it=items.find(i=>i.type.startsWith('image/'));if(it)return loadFile(it.getAsFile());const t=e.clipboardData?.getData('text/plain')||'';if(/^https?:\/\/\S+$/i.test(t.trim())&&!/^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName))urlHint()});
+// slumpad toning med 2–4 av färgerna man har hemma (alla om inga är valda)
+$('randomPattern').onclick=()=>{
+  const own=[...S.enabled].map(i=>PAL[i].rgb),p=randomPattern(own.length?own:PAL.map(c=>c.rgb));
+  setImage(drawPattern(p),'Slumpat mönster: '+p.name)};
 function buildSamples(){const box=$('samples');
   for(const sm of SAMPLES){const b=document.createElement('button'),t=document.createElement('canvas'),im=document.createElement('img');
     t.width=t.height=96;t.getContext('2d').drawImage(sampleImage(sm.id),0,0,96,96);im.src=t.toDataURL();im.alt='';
