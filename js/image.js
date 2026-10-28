@@ -19,7 +19,10 @@ function scaledSource(img,targetW){
 }
 export function placement(L,iw,ih){
   const s=(S.fit==='cover'?Math.max(L.bw/iw,L.bh/ih):Math.min(L.bw/iw,L.bh/ih))*S.zoom;
-  const dw=iw*s,dh=ih*s;return{dw,dh,ox:(L.bw-dw)/2*(1+S.panX),oy:(L.bh-dh)/2*(1+S.panY)};
+  // flytta lika långt som bilden sticker utanför plattan, men minst en halv platta åt varje håll,
+  // så att båda reglagen fungerar även när bilden passar exakt i den ena riktningen
+  const dw=iw*s,dh=ih*s,rx=Math.max(Math.abs(L.bw-dw),L.bw)/2,ry=Math.max(Math.abs(L.bh-dh),L.bh)/2;
+  return{dw,dh,ox:(L.bw-dw)/2+S.panX*rx,oy:(L.bh-dh)/2+S.panY*ry};
 }
 let bgLab=null;
 export function computeBg(){
