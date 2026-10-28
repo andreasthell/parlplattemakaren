@@ -14,6 +14,7 @@ Sidan kan installeras som app (på iPad: Dela → Lägg till på hemskärmen) oc
 | `js/shapes.js` | Plattformer och pinnarnas layout |
 | `js/image.js` | Bildsampling och huvudberäkningen |
 | `js/samples.js` | Exempelbilderna, ritade med kod |
+| `js/pattern.js` | Slumpade toningsmönster |
 | `js/render.js`, `js/print.js` | Ritning på skärmen och utskriftsbilden |
 | `js/ui.js` | Kopplingen till sidan |
 | `sw.js`, `manifest.webmanifest`, `icons/` | PWA: offline och installation |
