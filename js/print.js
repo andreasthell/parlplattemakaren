@@ -17,7 +17,7 @@ function addPhys(buf,dpi){
 }
 // utskriftsbilden byggs en gång och återanvänds tills mönstret ändras
 let lastUrl=null,pending=null;
-export function invalidatePrint(){pending=null}
+export function invalidatePrint(){pending=null;document.body.classList.remove('print-sheet')}
 function buildPrint(){
   if(!pending)pending=new Promise(resolve=>drawPrint(resolve));
   return pending;
@@ -71,9 +71,17 @@ export async function printPattern(){
   const p=await buildPrint();showPreview(p);
   // utskriftsarket visar bara bilden, i sin fysiska bredd, så att 100 % blir verklig storlek
   const img=$('printSheetImg');img.style.width=p.widthIn+'in';
-  if(img.getAttribute('src')!==p.url){img.src=p.url;try{await img.decode()}catch(e){}}
+  if(img.getAttribute('src')!==p.url){
+    const loaded=new Promise(r=>{img.onload=img.onerror=r});img.src=p.url;await loaded;
+    try{await img.decode()}catch(e){}
+  }
+  // låt webbläsaren rita bilden innan utskriften tas
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+  document.body.classList.add('print-sheet');
   window.print();
 }
+// Safari på iPad kan returnera från print() innan utskriften är klar, så klassen tas bort först efteråt
+addEventListener('afterprint',()=>document.body.classList.remove('print-sheet'));
 
 export async function downloadPattern(){
   const p=await buildPrint();showPreview(p);
