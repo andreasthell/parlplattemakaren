@@ -61,7 +61,7 @@ const PRESETS={
   heart:{shape:'heart',size:15,grid:'diagonal',board:'hama-heart'},
 };
 $('preset').onchange=e=>{const p=PRESETS[e.target.value];if(!p)return;
-  Object.assign(S,p,{bead:'5'});$('bead').value='5';
+  Object.assign(S,p);
   if(p.shape==='rect'){$('rw').value=p.rw;$('rh').value=p.rh;$('plate').value=p.plate}
   else{$('size').value=p.size;$('sizeV').textContent=p.size;setGrid(p.grid)}
   syncShapeUI();update()};
@@ -81,7 +81,6 @@ slider('zoom','zoom',v=>v/100,v=>v+' %');slider('panX','panX',v=>v/100);slider('
 slider('size','size');slider('maxc','maxc');slider('bright','bright');slider('contrast','contrast');slider('sat','sat');slider('bgTol','bgTol');
 function num(id,key,min,max){const el=$(id);el.onchange=()=>{let v=Math.round(+el.value||0);v=Math.min(max,Math.max(min,v));el.value=v;S[key]=v;update()}}
 num('rw','rw',5,120);num('rh','rh',5,120);num('plate','plate',0,120);
-$('bead').onchange=e=>{S.bead=e.target.value;update()};
 $('despeckle').onchange=e=>{S.despeckle=e.target.checked;update()};
 $('dither').onchange=e=>{S.dither=e.target.checked;update()};
 $('bg').onchange=e=>{S.bg=e.target.checked;$('bgTolRow').hidden=!S.bg;update()};

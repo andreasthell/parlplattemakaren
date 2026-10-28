@@ -27,7 +27,6 @@ const COUNTS={
   'round/offset':[73,211,769,1843,3403],'round/square':[69,177,665,1597,2941],
   'hex/offset':[61,169,631,1519,2791],'hex/square':[47,147,545,1319,2429],
   'star6/offset':[37,121,433,1093,1837],'star6/square':[37,95,373,895,1631],
-  'star5/offset':[34,88,344,826,1503],'star5/square':[33,80,299,710,1312],
   'heart/offset':[69,188,701,1678,3069],'heart/square':[58,163,608,1450,2666],
 };
 for(const[key,want]of Object.entries(COUNTS)){
@@ -39,14 +38,14 @@ for(const[key,want]of Object.entries(COUNTS)){
 
 test('pärlornas mittpunkter ryms inom angiven storlek',()=>{
   // formen testas mot radien D/2+0,05, så avståndet mellan yttersta mittpunkterna är högst D+0,1
-  for(const shape of['round','hex','star6','star5','heart'])for(const grid of['offset','square'])for(const D of SIZES){
+  for(const shape of['round','hex','star6','heart'])for(const grid of['offset','square'])for(const D of SIZES){
     const L=layout(shape,D,grid);
     assert.ok(L.maxX-L.minX<=D+0.1&&L.maxY-L.minY<=D+0.1,`${shape}/${grid}/${D}: ${L.bw}×${L.bh}`);
   }
 });
 
 test('rund, sexkant och stjärnor är spegelsymmetriska i sidled',()=>{
-  for(const shape of['round','hex','star6','star5','heart'])for(const grid of['offset','square'])for(const D of SIZES){
+  for(const shape of['round','hex','star6','heart'])for(const grid of['offset','square'])for(const D of SIZES){
     const L=layout(shape,D,grid),mid=(L.minX+L.maxX)/2;
     const set=new Set(L.cells.map(c=>c.row+':'+(c.x-mid)));
     for(const c of L.cells)assert.ok(set.has(c.row+':'+(mid-c.x)),`${shape}/${grid}/${D}`);

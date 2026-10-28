@@ -6,7 +6,6 @@ import{S,app}from'./state.js';
 import{$,tok,fmt,cm}from'./util.js';
 import{jpegToPdf}from'./pdf.js';
 
-const BEAD_NAMES={'2.5':'Mini 2,5 mm','5':'Midi 5 mm','10':'Maxi 10 mm'};
 
 const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
 function crc32(u8){let c=0xFFFFFFFF;for(let i=0;i<u8.length;i++)c=CRC[(c^u8[i])&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0}
@@ -35,7 +34,7 @@ function drawPrint(resolve){
   x.fillStyle='#FFFFFF';x.fillRect(0,0,W,H);x.fillStyle='#1A1F2E';x.textBaseline='alphabetic';
   x.font=`600 ${Math.round(56*u)}px ${disp}`;x.fillText(`Pärlmönster · ${SHAPE_NAMES[S.shape]}`,m,m+56*u);
   x.font=`${Math.round(34*u)}px ${body}`;x.fillStyle='#5B6478';
-  x.fillText(`${BEAD_NAMES[S.bead]} · ${fmt(R.total)} pärlor · ${R.used.length} färger · ${cm(L.bw)} × ${cm(L.bh)} cm · skriv ut i 100 %`,m,m+112*u);
+  x.fillText(`Midi 5 mm · ${fmt(R.total)} pärlor · ${R.used.length} färger · ${cm(L.bw)} × ${cm(L.bh)} cm · skriv ut i 100 %`,m,m+112*u);
   const top=m+titleH;
   x.textAlign='center';x.textBaseline='middle';x.font=`700 ${Math.round(P*0.5)}px ${body}`;
   L.cells.forEach((cc,i)=>{const cx=m+(cc.x-L.minX+0.5)*P,cy=top+(cc.y-L.minY+0.5)*P,p=R.out[i];

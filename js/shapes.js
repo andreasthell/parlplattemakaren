@@ -1,17 +1,16 @@
 /* ---------- plattformer ---------- */
 const PI=Math.PI;
 
-export const SHAPE_NAMES={rect:'Fyrkant',round:'Rund',hex:'Sexkant',star6:'Stjärna (6 uddar)',star5:'Stjärna (5 uddar)',heart:'Hjärta'};
+export const SHAPE_NAMES={rect:'Fyrkant',round:'Rund',hex:'Sexkant',star6:'Stjärna',heart:'Hjärta'};
 
 function inPoly(x,y,pts){let ins=false;for(let i=0,j=pts.length-1;i<pts.length;j=i++){const[xi,yi]=pts[i],[xj,yj]=pts[j];if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))ins=!ins}return ins}
 const polyAt=(n,r0,r1,start)=>{const p=[];for(let i=0;i<n*2;i++){const a=start+i*PI/n,r=i%2?r1:r0;p.push([Math.cos(a)*r,Math.sin(a)*r])}return p};
-const STAR6=polyAt(6,1,1/Math.sqrt(3),-PI/2),STAR5=polyAt(5,1,0.5,-PI/2);
+const STAR6=polyAt(6,1,1/Math.sqrt(3),-PI/2);
 const HEX=[0,1,2,3,4,5].map(i=>[Math.cos(i*PI/3),Math.sin(i*PI/3)]);
 const TEST={
   round:(x,y)=>x*x+y*y<=1,
   hex:(x,y)=>inPoly(x,y,HEX),
   star6:(x,y)=>inPoly(x,y,STAR6),
-  star5:(x,y)=>inPoly(x,y*1.05-0.05,STAR5),
   heart:(x,y)=>{const hx=x*1.14,hy=-y*1.125+0.125,a=hx*hx+hy*hy-1;return a*a*a-hx*hx*hy*hy*hy<=0}
 };
 /* Hjärta på diagonal platta, byggt direkt i rutnätet som Hamas lilla hjärta: en kvadrat med n×n
